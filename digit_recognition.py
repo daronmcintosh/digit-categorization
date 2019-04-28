@@ -4,7 +4,7 @@ import numpy as np
 import models
 from matplotlib import image
 
-# Fix random seed for reproducibility
+# Random seed for reproducibility
 seed = 7
 np.random.seed(seed)
 
@@ -39,5 +39,5 @@ expected_values = np.asarray(expected_values, dtype=np.int32)
 X = loaded_images
 Y = expected_values
 
-result = models.main(X, Y, model='svcOvR')
+result = models.main(X, Y, model='svcOvO')
 print(result)

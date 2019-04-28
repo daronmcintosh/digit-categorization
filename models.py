@@ -63,7 +63,6 @@ def svcOvR(X, Y):
 
 
 def svcOvO(X, Y):
-    # TODO: Convert Y to one dimensional array
     clf = OneVsOneClassifier(
         SVC(random_state=seed, gamma='scale'))
     clf.fit(X, Y)
@@ -92,7 +91,6 @@ def gNB(X, Y):
 
 
 def bNB(X, Y):
-    # TODO: Convert Y to one dimensional array
     Y = oneShotY(Y)
     clf = BernoulliNB()
     clf.fit(X, Y)
