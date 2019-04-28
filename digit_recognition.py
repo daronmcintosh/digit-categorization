@@ -1,10 +1,8 @@
 # Imports
 import glob
-
 import numpy as np
-from matplotlib import image
-
 import models
+from matplotlib import image
 
 # Fix random seed for reproducibility
 seed = 7
@@ -13,7 +11,8 @@ np.random.seed(seed)
 # Load all images in a directory
 loaded_images = []
 expected_values = []
-for filename in glob.glob('D:/Users/DaronPC/Downloads/DataSet/*.bmp'):
+filename_list = []
+for filename in glob.glob('DataSet/*.bmp'):
     # Load image
     img_data = image.imread(filename)
 
@@ -23,18 +22,22 @@ for filename in glob.glob('D:/Users/DaronPC/Downloads/DataSet/*.bmp'):
 
     # Append expected value
     expected_value = int(filename.split('_')[2])
-    arr1 = np.zeros(10, dtype=int)
-    arr1[expected_value] = 1
+
+    # Append filename to filename_list
+    filename_list.append(filename)
 
     # Store loaded image
     loaded_images.append(img_data)
     # Store expected values
-    expected_values.append(arr1)
+    expected_values.append(expected_value)
 
 # Convert list to numpy array
-loaded_images = np.asarray(loaded_images, dtype=np.int16)
-expected_values = np.asarray(expected_values, dtype=np.int16)
+loaded_images = np.asarray(loaded_images, dtype=np.int32)
+expected_values = np.asarray(expected_values, dtype=np.int32)
 
 # Split into input (X) and output (Y) variables
 X = loaded_images
 Y = expected_values
+
+result = models.main(X, Y, model='svcOvR')
+print(result)
