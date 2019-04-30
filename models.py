@@ -1,3 +1,6 @@
+import tensorflow as tf
+tf.logging.set_verbosity(tf.logging.ERROR) #Removes all the warnings.
+
 from keras.layers import Dense
 from keras.models import Sequential
 from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
@@ -14,14 +17,19 @@ seed = 7
 
 
 def nn(X_test, Y_test, X_train, Y_train):
+    print("Training on "+str(len(X_train))+ " samples. Validating on "+str(len(X_test))+ " samples.")
     Y_test = oneShotY(Y_test)
     Y_train = oneShotY(Y_train)
 
+    # #Normalize
+    # X_train = X_train / 255
+    # X_test = X_test / 255
+
     # Create model
     model = Sequential()
-    model.add(Dense(1024, input_dim=1024, activation='relu'))
-    model.add(Dense(128, activation='relu'))
-    model.add(Dense(10, activation='relu'))
+    model.add(Dense(1024, input_dim=1024, activation='relu', kernel_initializer='normal'))
+    # model.add(Dense(128, activation='relu')) #With 85.4%, Without 86?
+    # model.add(Dense(10, activation='relu'))
     model.add(Dense(10, activation='softmax'))
 
     # Compile model
@@ -29,7 +37,7 @@ def nn(X_test, Y_test, X_train, Y_train):
                   optimizer='adam', metrics=['accuracy'])
 
     # Fit the model
-    model.fit(X_train, Y_train, epochs=10, batch_size=32, verbose=1)
+    model.fit(X_train, Y_train, epochs=10, batch_size=16, verbose=0)
 
     # Evaluate the model
     scores = model.evaluate(X_test, Y_test, verbose=0)

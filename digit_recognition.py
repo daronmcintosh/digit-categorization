@@ -39,6 +39,10 @@ expected_values = np.asarray(expected_values, dtype=np.int32)
 X = loaded_images
 Y = expected_values
 
+
+#Normalize
+X = X / 255
+
 # Classify all
 # for classifier in models.classifiers:
 #     models.classify(X, Y, model=classifier)
