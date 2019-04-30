@@ -39,5 +39,6 @@ expected_values = np.asarray(expected_values, dtype=np.int32)
 X = loaded_images
 Y = expected_values
 
-result = models.main(X, Y, model='svcOvO')
-print(result)
+models.main(X, Y, model='svcOvO')
+# result = models.main(X, Y, model='svcOvO')
+# print(result)

@@ -3,17 +3,15 @@ from keras.models import Sequential
 from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from sklearn.naive_bayes import GaussianNB, BernoulliNB
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import KFold
 from sklearn.svm import SVC
 import numpy as np
 
 seed = 7
 
 
-# TODO: neural network and bnb predicts the same thing consistently
-
-
 def main(X, Y, model='nn'):
-    menu_functions = {
+    classifiers = {
         'nn': nn,
         'svcOvR': svcOvR,
         'svcOvO': svcOvO,
@@ -21,13 +19,36 @@ def main(X, Y, model='nn'):
         'gNB': gNB,
         'bNB': bNB,
     }
-    # Split into folds and do loop here?
-    func = menu_functions[model]
-    return func(X, Y)
+    # Create k-fold
+    kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
+
+    # Select classifier
+    classifier = classifiers[model]
+
+    # Store Y_true and Y_pred to evaluate overall mcc score
+    Y_true = []
+    Y_pred = []
+
+    # Split X,Y in 10 folds of train and test
+    for train, test in kfold.split(X, Y):
+        result = classifier(X[test], Y[test], X[train], Y[train])
+        # Create 10*10 grid and iterate through it once to add the values
+        # Iterate through it again to find the TP, TN, FP, FN.
+        # It might be possible to iterate through it just once.
+        # Time complexity will still be O(n^2) so dont sweat it
+
+        # Append each Y_true and Y_pred
+        Y_true.append(Y[train])
+        # The below has to account for oneshotting
+        # Maybe un-oneshot!? before sending the predictons back?
+        Y_pred.append(result[0])
+        print(result[1])
 
 
-def nn(X, Y):
-    Y = oneShotY(Y)
+def nn(X_test, Y_test, X_train, Y_train):
+    Y_test = oneShotY(Y_test)
+    Y_train = oneShotY(Y_train)
+
     # Create model
     model = Sequential()
     model.add(Dense(1024, input_dim=1024, activation='relu'))
@@ -40,66 +61,82 @@ def nn(X, Y):
                   optimizer='adam', metrics=['accuracy'])
 
     # Fit the model
-    model.fit(X, Y, epochs=10, batch_size=32, verbose=1)
+    model.fit(X_train, Y_train, epochs=10, batch_size=32, verbose=1)
 
     # Evaluate the model
-    scores = model.evaluate(X, Y, verbose=0)
+    scores = model.evaluate(X_test, Y_test, verbose=0)
     score = scores[1] * 100
+    predictions = model.predict(X_test)
 
-    # Get Predictions
-    predictions = model.predict(X)
     return (predictions, score)
 
 
-def svcOvR(X, Y):
+def svcOvR(X_test, Y_test, X_train, Y_train):
+    # Create classifier
     clf = OneVsRestClassifier(
         SVC(random_state=seed, gamma='scale'))
-    clf.fit(X, Y)
-    score = clf.score(X, Y) * 100
+    clf.fit(X_train, Y_train)
 
-    predictions = clf.predict(X)
+    # Evaluate classifier
+    score = clf.score(X_test, Y_test) * 100
+    predictions = clf.predict(X_test)
 
     return (predictions, score)
 
 
-def svcOvO(X, Y):
+def svcOvO(X_test, Y_test, X_train, Y_train):
+    # Create classifier
     clf = OneVsOneClassifier(
         SVC(random_state=seed, gamma='scale'))
-    clf.fit(X, Y)
-    score = clf.score(X, Y)
-    predictions = clf.predict(X)
+    clf.fit(X_train, Y_train)
+
+    # Evaluate classifier
+    score = clf.score(X_test, Y_test)
+    predictions = clf.predict(X_test)
 
     return (predictions, score)
 
 
-def kNN(X, Y):
+def kNN(X_test, Y_test, X_train, Y_train):
+    # Create classifier
     neigh = KNeighborsClassifier()
-    neigh.fit(X, Y)
-    score = neigh.score(X, Y)
-    predictions = neigh.predict(X)
+    neigh.fit(X_train, Y_train)
+
+    # Evaluate classifier
+    score = neigh.score(X_test, Y_test)
+    predictions = neigh.predict(X_test)
 
     return (predictions, score)
 
 
-def gNB(X, Y):
+def gNB(X_test, Y_test, X_train, Y_train):
+    # Create classifier
     clf = GaussianNB()
-    clf.fit(X, Y)
-    score = clf.score(X, Y)
-    predictions = clf.predict(X)
+    clf.fit(X_train, Y_train)
+
+    # Evaluate classifier
+    score = clf.score(X_test, Y_test)
+    predictions = clf.predict(X_test)
 
     return (predictions, score)
 
 
-def bNB(X, Y):
-    Y = oneShotY(Y)
+def bNB(X_test, Y_test, X_train, Y_train):
+    Y_test = oneShotY(Y_test)
+    Y_train = oneShotY(Y_train)
+
+    # Create classifier
     clf = BernoulliNB()
-    clf.fit(X, Y)
-    score = clf.score(X, Y)
-    predictions = clf.predict(X)
+    clf.fit(X_train, Y_train)
+
+    # Evaluate classifier
+    score = clf.score(X_test, Y_test)
+    predictions = clf.predict(X_test)
 
     return (predictions, score)
 
 
+# One shot target variables
 def oneShotY(Y):
     new_Y = []
     for digit in Y:
