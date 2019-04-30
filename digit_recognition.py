@@ -40,12 +40,12 @@ X = loaded_images
 Y = expected_values
 
 
-#Normalize
+# Normalize
 X = X / 255
 
 # Classify all
-# for classifier in models.classifiers:
-#     models.classify(X, Y, model=classifier)
+for classifier in models.classifiers:
+    models.classify(X, Y, model=classifier)
 
 # Classify one
-models.classify(X, Y, model='bNB')
+# models.classify(X, Y, model='bNB')

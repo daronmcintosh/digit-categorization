@@ -1,34 +1,49 @@
-import tensorflow as tf
-tf.logging.set_verbosity(tf.logging.ERROR) #Removes all the warnings.
-
-from keras.layers import Dense
-from keras.models import Sequential
-from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
-from sklearn.naive_bayes import GaussianNB, BernoulliNB
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import KFold
-from sklearn.svm import SVC
-from math import sqrt
-from sklearn import metrics
-import numpy as np
 import csv
+import numpy as np
+from sklearn import metrics
+from math import sqrt
+from sklearn.svm import SVC
+from sklearn.model_selection import KFold
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB, BernoulliNB
+from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
+from keras.models import Sequential
+from keras.layers import Dense
+import tensorflow as tf
+tf.logging.set_verbosity(tf.logging.ERROR)  # Removes all the warnings.
+
 
 seed = 7
 
+# One shot target variables
+
+
+def oneShotY(Y):
+    new_Y = []
+    for digit in Y:
+        one_shot = np.zeros(10, dtype=int)
+        one_shot[digit] = 1
+        new_Y.append(one_shot)
+    return np.asarray(new_Y)
+
+
+def unOneShotY(Y):
+    new_Y = []
+    for arr in Y:
+        digit = np.argmax(arr)
+        new_Y.append(digit)
+    return np.asarray(new_Y)
+
 
 def nn(X_test, Y_test, X_train, Y_train):
-    print("Training on "+str(len(X_train))+ " samples. Validating on "+str(len(X_test))+ " samples.")
     Y_test = oneShotY(Y_test)
     Y_train = oneShotY(Y_train)
 
-    # #Normalize
-    # X_train = X_train / 255
-    # X_test = X_test / 255
-
     # Create model
     model = Sequential()
-    model.add(Dense(1024, input_dim=1024, activation='relu', kernel_initializer='normal'))
-    # model.add(Dense(128, activation='relu')) #With 85.4%, Without 86?
+    model.add(Dense(1024, input_dim=1024, activation='relu',
+                    kernel_initializer='normal'))
+    # model.add(Dense(128, activation='relu'))  # With 85.4%, Without 86?
     # model.add(Dense(10, activation='relu'))
     model.add(Dense(10, activation='softmax'))
 
@@ -37,12 +52,14 @@ def nn(X_test, Y_test, X_train, Y_train):
                   optimizer='adam', metrics=['accuracy'])
 
     # Fit the model
-    model.fit(X_train, Y_train, epochs=10, batch_size=16, verbose=0)
+    model.fit(X_train, Y_train, epochs=10, batch_size=16, verbose=1)
 
     # Evaluate the model
     scores = model.evaluate(X_test, Y_test, verbose=0)
     score = scores[1]
     predictions = model.predict(X_test)
+
+    predictions = unOneShotY(predictions)
 
     return (predictions, score)
 
@@ -109,17 +126,9 @@ def bNB(X_test, Y_test, X_train, Y_train):
     score = clf.score(X_test, Y_test)
     predictions = clf.predict(X_test)
 
+    predictions = unOneShotY(predictions)
+
     return (predictions, score)
-
-
-# One shot target variables
-def oneShotY(Y):
-    new_Y = []
-    for digit in Y:
-        one_shot = np.zeros(10, dtype=int)
-        one_shot[digit] = 1
-        new_Y.append(one_shot)
-    return np.asarray(new_Y)
 
 
 classifiers = {
