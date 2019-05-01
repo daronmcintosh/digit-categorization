@@ -69,13 +69,11 @@ def svcOvR(X_test, Y_test, X_train, Y_train):
         SVC(random_state=seed, gamma='scale'))
     clf.fit(X_train, Y_train)
 
+    # Evaluate classifier
+    score = clf.score(X_test, Y_test)
+    predictions = clf.predict(X_test)
 
-``
-# Evaluate classifier
-score = clf.score(X_test, Y_test)
-predictions = clf.predict(X_test)
-
-return (predictions, score)
+    return (predictions, score)
 
 
 def svcOvO(X_test, Y_test, X_train, Y_train):
