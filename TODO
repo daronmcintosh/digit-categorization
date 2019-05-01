@@ -1,9 +1,10 @@
 Todo:
   ✔ Implement k-folds @done(19-04-29 23:46)
-  ☐ Fix the neural network classifier because it is only getting a 10% accuracy
+  ✔ Fix the neural network classifier because it is only getting a 10% accuracy @done(19-05-01 13:25)
   ✔ Create a confusion matrix to store the sum of all the confusion matrices @done(19-04-30 17:17)
   ✔ For each k-fold @done(19-04-30 17:17)
     ✘ Generate a confusion matrix and add it to the 'total' confusion matrix @cancelled(19-04-30 17:17)
     ✔ Calculate precision, recall, f1-score, mcc score per digit @done(19-04-30 17:17)
   ✔ Calculate mcc score for entire confusion matrix @done(19-04-30 17:17)
   ✘ Save each confusion matrix to one file or 10 separate files @cancelled(19-04-30 17:17)
+  ☐ Create a production file to select saved model and used that to make predictions

@@ -5,7 +5,7 @@ from math import sqrt
 from sklearn.svm import SVC
 from sklearn.model_selection import KFold
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.naive_bayes import GaussianNB, BernoulliNB
+from sklearn.naive_bayes import GaussianNB
 from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from keras.models import Sequential
 from keras.layers import Dense
@@ -15,9 +15,8 @@ tf.logging.set_verbosity(tf.logging.ERROR)  # Removes all the warnings.
 
 seed = 7
 
+
 # One shot target variables
-
-
 def oneShotY(Y):
     new_Y = []
     for digit in Y:
@@ -70,11 +69,13 @@ def svcOvR(X_test, Y_test, X_train, Y_train):
         SVC(random_state=seed, gamma='scale'))
     clf.fit(X_train, Y_train)
 
-    # Evaluate classifier
-    score = clf.score(X_test, Y_test)
-    predictions = clf.predict(X_test)
 
-    return (predictions, score)
+``
+# Evaluate classifier
+score = clf.score(X_test, Y_test)
+predictions = clf.predict(X_test)
+
+return (predictions, score)
 
 
 def svcOvO(X_test, Y_test, X_train, Y_train):
@@ -114,34 +115,16 @@ def gNB(X_test, Y_test, X_train, Y_train):
     return (predictions, score)
 
 
-def bNB(X_test, Y_test, X_train, Y_train):
-    Y_test = oneShotY(Y_test)
-    Y_train = oneShotY(Y_train)
-
-    # Create classifier
-    clf = BernoulliNB()
-    clf.fit(X_train, Y_train)
-
-    # Evaluate classifier
-    score = clf.score(X_test, Y_test)
-    predictions = clf.predict(X_test)
-
-    predictions = unOneShotY(predictions)
-
-    return (predictions, score)
-
-
 classifiers = {
     'nn': nn,
     'svcOvR': svcOvR,
     'svcOvO': svcOvO,
     'kNN': kNN,
-    'gNB': gNB,
-    'bNB': bNB,
+    'gNB': gNB
 }
 
 
-def classify(X, Y, model='nn'):
+def classify(X, Y, model='nn', kFold=True):
     # Create k-fold
     kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
 
