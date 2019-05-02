@@ -49,6 +49,7 @@ def main(X, Y, model='nn'):
 
 
 def nn(X_test, Y_test, X_train, Y_train):
+    # https://machinelearningmastery.com/handwritten-digit-recognition-using-convolutional-neural-networks-python-keras/
     print("Training on "+str(len(X_train))+ " samples. Validating on "+str(len(X_test))+ " samples.")
     Y_test = oneShotY(Y_test)
     Y_train = oneShotY(Y_train)
