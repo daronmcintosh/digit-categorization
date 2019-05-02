@@ -148,7 +148,9 @@ def classify(X, Y, classifierName, useKFold=True):
     if(not useKFold):
         result = classifier(X, Y)
         model = result[2]
-        print(result[1])
+        print(classifierName, end=" ")
+        print(f'Accuracy: {result[1]:.2f}', end=" ")
+        print(f'MCC score: {metrics.matthews_corrcoef(Y, result[0]):0.2f}')
         if(classifierName == 'nn'):
             model.save('models/nn_model.h5')
         else:

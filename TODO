@@ -7,4 +7,4 @@ Todo:
     ✔ Calculate precision, recall, f1-score, mcc score per digit @done(19-04-30 17:17)
   ✔ Calculate mcc score for entire confusion matrix @done(19-04-30 17:17)
   ✘ Save each confusion matrix to one file or 10 separate files @cancelled(19-04-30 17:17)
-  ☐ Create a production file to select saved model and used that to make predictions
+  ✔ Create a production file to select saved model and used that to make predictions @done(19-05-02 02:33)
