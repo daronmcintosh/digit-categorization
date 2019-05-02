@@ -1,15 +1,18 @@
 import csv
-import numpy as np
-from sklearn import metrics
 from math import sqrt
-from sklearn.svm import SVC
-from sklearn.model_selection import KFold
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.naive_bayes import GaussianNB
-from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
-from keras.models import Sequential
-from keras.layers import Dense
+
+import numpy as np
 import tensorflow as tf
+from keras.layers import Dense
+from keras.models import Sequential
+from sklearn import metrics
+from sklearn.externals import joblib
+from sklearn.model_selection import KFold
+from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+
 tf.logging.set_verbosity(tf.logging.ERROR)  # Removes all the warnings.
 
 
@@ -26,7 +29,7 @@ def oneShotY(Y):
     return np.asarray(new_Y)
 
 
-# Unonshot target variables
+# Unoneshot target variables
 def unOneShotY(Y):
     new_Y = []
     for arr in Y:
@@ -35,7 +38,17 @@ def unOneShotY(Y):
     return np.asarray(new_Y)
 
 
-def nn(X_test, Y_test, X_train, Y_train):
+# Get input and output based on the amount of parameters passed
+def get_input_output(X, Y, *args):
+    X_test = X
+    Y_test = Y
+    X_train = args[0] if len(args) == 2 else X
+    Y_train = args[1] if len(args) == 2 else Y
+    return (X_test, Y_test, X_train, Y_train)
+
+
+def nn(X, Y, *args):
+    X_test, Y_test, X_train, Y_train = get_input_output(X, Y, *args)
     Y_test = oneShotY(Y_test)
     Y_train = oneShotY(Y_train)
 
@@ -64,7 +77,8 @@ def nn(X_test, Y_test, X_train, Y_train):
     return (predictions, score, model)
 
 
-def svcOvR(X_test, Y_test, X_train, Y_train):
+def svcOvR(X, Y, *args):
+    X_test, Y_test, X_train, Y_train = get_input_output(X, Y, *args)
     # Create classifier
     model = OneVsRestClassifier(
         SVC(random_state=seed, gamma='scale'))
@@ -77,7 +91,8 @@ def svcOvR(X_test, Y_test, X_train, Y_train):
     return (predictions, score, model)
 
 
-def svcOvO(X_test, Y_test, X_train, Y_train):
+def svcOvO(X, Y, *args):
+    X_test, Y_test, X_train, Y_train = get_input_output(X, Y, *args)
     # Create classifier
     model = OneVsOneClassifier(
         SVC(random_state=seed, gamma='scale'))
@@ -90,7 +105,8 @@ def svcOvO(X_test, Y_test, X_train, Y_train):
     return (predictions, score, model)
 
 
-def kNN(X_test, Y_test, X_train, Y_train):
+def kNN(X, Y, *args):
+    X_test, Y_test, X_train, Y_train = get_input_output(X, Y, *args)
     # Create classifier
     model = KNeighborsClassifier()
     model.fit(X_train, Y_train)
@@ -102,7 +118,8 @@ def kNN(X_test, Y_test, X_train, Y_train):
     return (predictions, score, model)
 
 
-def gNB(X_test, Y_test, X_train, Y_train):
+def gNB(X, Y, *args):
+    X_test, Y_test, X_train, Y_train = get_input_output(X, Y, *args)
     # Create classifier
     model = GaussianNB()
     model.fit(X_train, Y_train)
@@ -123,16 +140,29 @@ classifiers = {
 }
 
 
-def classify(X, Y, model='nn', kFold=True):
+def classify(X, Y, classifierName, useKFold=True):
+    # Select classifier
+    classifier = classifiers[classifierName]
+
+    # Train and Predict on entire data then save the model
+    if(not useKFold):
+        result = classifier(X, Y)
+        model = result[2]
+        print(result[1])
+        if(classifierName == 'nn'):
+            model.save('models/nn_model.h5')
+        else:
+            joblib.dump(model, f'models/{classifierName}_model.pkl')
+        return
+
     # Create k-fold
     kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
 
-    # Select classifier
-    classifier = classifiers[model]
-
+    # Create filename using the classifier choosen
+    filename = f'csv/{classifierName}.csv'
     # Create a file using the model choosen
-    with open(f'{model}.csv', mode='w', newline='') as output_file:
-        output_writer = csv.writer(output_file)
+    with open(filename, mode='w', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file)
 
         # Split X,Y in 10 folds of train and test
         loop_number = 0
@@ -142,15 +172,15 @@ def classify(X, Y, model='nn', kFold=True):
             fold_str = f'Fold {loop_number}'
 
             # Create column headers
-            output_writer.writerow([fold_str, 'Digit', 'Precision', 'Recall',
-                                    'F1-Score', 'MCC Score', 'Accuracy', 'TP',
-                                    'TN', 'FP', 'FN'])
+            csv_writer.writerow([fold_str, 'Digit', 'Precision', 'Recall',
+                                 'F1-Score', 'MCC Score', 'Accuracy', 'TP',
+                                 'TN', 'FP', 'FN'])
 
             # Get accuracy and predictions from classifer
             result = classifier(X[test], Y[test], X[train], Y[train])
 
-            # Get prediction, score, model from results
-            predictions, score, model = result[0], result[1], result[2]
+            # Get prediction, score from results
+            predictions, score = result[0], result[1]
 
             # Generate confusion matrix
             confusion_matrix = metrics.confusion_matrix(Y[test], predictions)
@@ -186,18 +216,18 @@ def classify(X, Y, model='nn', kFold=True):
                 accuracy = np.round(accuracy, decimals=2)
 
                 # Write values to file
-                output_writer.writerow(['', digit, precision, recall, f1_score,
-                                        mcc_score, accuracy, tp, tn, fp, fn])
+                csv_writer.writerow(['', digit, precision, recall, f1_score,
+                                     mcc_score, accuracy, tp, tn, fp, fn])
                 digit += 1
 
             # Calculate and write overall mcc
             overall_mcc_score = metrics.matthews_corrcoef(Y[test], predictions)
             overall_mcc_score = np.round(overall_mcc_score, decimals=2)
-            output_writer.writerow(['Overall MCC', overall_mcc_score])
+            csv_writer.writerow(['Overall MCC', overall_mcc_score])
 
             # Calculate and write overall accuracy
             overall_accuracy = np.round(score, decimals=2)
-            output_writer.writerow(['Overall Accuracy', overall_accuracy])
+            csv_writer.writerow(['Overall Accuracy', overall_accuracy])
 
             # Write a blank row to separate folds
-            output_writer.writerow([])
+            csv_writer.writerow([])
