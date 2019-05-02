@@ -16,7 +16,7 @@ tf.logging.set_verbosity(tf.logging.ERROR)  # Removes all the warnings.
 seed = 7
 
 
-# One shot target variables
+# Oneshot target variables
 def oneShotY(Y):
     new_Y = []
     for digit in Y:
@@ -26,6 +26,7 @@ def oneShotY(Y):
     return np.asarray(new_Y)
 
 
+# Unonshot target variables
 def unOneShotY(Y):
     new_Y = []
     for arr in Y:
@@ -60,57 +61,57 @@ def nn(X_test, Y_test, X_train, Y_train):
 
     predictions = unOneShotY(predictions)
 
-    return (predictions, score)
+    return (predictions, score, model)
 
 
 def svcOvR(X_test, Y_test, X_train, Y_train):
     # Create classifier
-    clf = OneVsRestClassifier(
+    model = OneVsRestClassifier(
         SVC(random_state=seed, gamma='scale'))
-    clf.fit(X_train, Y_train)
+    model.fit(X_train, Y_train)
 
     # Evaluate classifier
-    score = clf.score(X_test, Y_test)
-    predictions = clf.predict(X_test)
+    score = model.score(X_test, Y_test)
+    predictions = model.predict(X_test)
 
-    return (predictions, score)
+    return (predictions, score, model)
 
 
 def svcOvO(X_test, Y_test, X_train, Y_train):
     # Create classifier
-    clf = OneVsOneClassifier(
+    model = OneVsOneClassifier(
         SVC(random_state=seed, gamma='scale'))
-    clf.fit(X_train, Y_train)
+    model.fit(X_train, Y_train)
 
     # Evaluate classifier
-    score = clf.score(X_test, Y_test)
-    predictions = clf.predict(X_test)
+    score = model.score(X_test, Y_test)
+    predictions = model.predict(X_test)
 
-    return (predictions, score)
+    return (predictions, score, model)
 
 
 def kNN(X_test, Y_test, X_train, Y_train):
     # Create classifier
-    neigh = KNeighborsClassifier()
-    neigh.fit(X_train, Y_train)
+    model = KNeighborsClassifier()
+    model.fit(X_train, Y_train)
 
     # Evaluate classifier
-    score = neigh.score(X_test, Y_test)
-    predictions = neigh.predict(X_test)
+    score = model.score(X_test, Y_test)
+    predictions = model.predict(X_test)
 
-    return (predictions, score)
+    return (predictions, score, model)
 
 
 def gNB(X_test, Y_test, X_train, Y_train):
     # Create classifier
-    clf = GaussianNB()
-    clf.fit(X_train, Y_train)
+    model = GaussianNB()
+    model.fit(X_train, Y_train)
 
     # Evaluate classifier
-    score = clf.score(X_test, Y_test)
-    predictions = clf.predict(X_test)
+    score = model.score(X_test, Y_test)
+    predictions = model.predict(X_test)
 
-    return (predictions, score)
+    return (predictions, score, model)
 
 
 classifiers = {
@@ -128,10 +129,6 @@ def classify(X, Y, model='nn', kFold=True):
 
     # Select classifier
     classifier = classifiers[model]
-
-    # Store Y_true and Y_pred to evaluate overall mcc score
-    Y_true = []
-    Y_pred = []
 
     # Create a file using the model choosen
     with open(f'{model}.csv', mode='w', newline='') as output_file:
@@ -152,8 +149,11 @@ def classify(X, Y, model='nn', kFold=True):
             # Get accuracy and predictions from classifer
             result = classifier(X[test], Y[test], X[train], Y[train])
 
+            # Get prediction, score, model from results
+            predictions, score, model = result[0], result[1], result[2]
+
             # Generate confusion matrix
-            confusion_matrix = metrics.confusion_matrix(Y[test], result[0])
+            confusion_matrix = metrics.confusion_matrix(Y[test], predictions)
 
             # Get TP, TN, FP, FN values
             FP = confusion_matrix.sum(axis=0) - np.diag(confusion_matrix)
@@ -191,18 +191,13 @@ def classify(X, Y, model='nn', kFold=True):
                 digit += 1
 
             # Calculate and write overall mcc
-            overall_mcc_score = metrics.matthews_corrcoef(Y[test], result[0])
+            overall_mcc_score = metrics.matthews_corrcoef(Y[test], predictions)
             overall_mcc_score = np.round(overall_mcc_score, decimals=2)
             output_writer.writerow(['Overall MCC', overall_mcc_score])
 
             # Calculate and write overall accuracy
-            overall_accuracy = np.round(result[1], decimals=2)
+            overall_accuracy = np.round(score, decimals=2)
             output_writer.writerow(['Overall Accuracy', overall_accuracy])
 
             # Write a blank row to separate folds
             output_writer.writerow([])
-            # Append each Y_true and Y_pred
-            Y_true.append(Y[train])
-            # The below has to account for oneshotting
-            # Maybe un-oneshot!? before sending the predictons back?
-            Y_pred.append(result[0])
