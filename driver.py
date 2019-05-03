@@ -8,6 +8,7 @@ from matplotlib import image
 from sklearn.externals import joblib
 
 import digit_recognition
+import classify
 
 
 def runCompetition(folderName, classifierName):
@@ -55,6 +56,9 @@ def runCompetition(folderName, classifierName):
     # Make predictions
     predictions = model.predict(X)
 
+    if(classifierName == 'nn'):
+        predictions = classify.unOneShotY(predictions)
+
     # Output csv file
     with open('competition.csv', mode='w', newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
@@ -64,6 +68,5 @@ def runCompetition(folderName, classifierName):
 
 # Three ways to run the program
 # digit_recognition.classifyOne(False, classifierName='svcOvR')
-digit_recognition.classifyAll(False)
-# runCompetition('SOMEFOLDER', 'svcOvO')
-exit()
+# digit_recognition.classifyAll(False)
+runCompetition('bmp', 'svcOvO')
