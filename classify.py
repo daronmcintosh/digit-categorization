@@ -65,7 +65,7 @@ def nn(X, Y, *args):
                   optimizer='adam', metrics=['accuracy'])
 
     # Fit the model
-    model.fit(X_train, Y_train, epochs=10, batch_size=16, verbose=1)
+    model.fit(X_train, Y_train, epochs=10, batch_size=16, verbose=0)
 
     # Evaluate the model
     scores = model.evaluate(X_test, Y_test, verbose=0)
