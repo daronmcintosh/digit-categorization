@@ -69,4 +69,4 @@ def runCompetition(folderName, classifierName):
 # Three ways to run the program
 # digit_recognition.classifyOne(False, classifierName='svcOvR')
 # digit_recognition.classifyAll(False)
-runCompetition('bmp', 'svcOvO')
+runCompetition('CompetionDataSet', 'svcOvO')
