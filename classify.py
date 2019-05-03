@@ -176,7 +176,7 @@ def classify(X, Y, classifierName, useKFold=True):
             # Create column headers
             csv_writer.writerow([fold_str, 'Digit', 'Precision', 'Recall',
                                  'F1-Score', 'MCC Score', 'Accuracy', 'TP',
-                                 'TN', 'FP', 'FN'])
+                                 'TN', 'FP', 'FN', '', 'Confusion Matrix'])
 
             # Get accuracy and predictions from classifer
             result = classifier(X[test], Y[test], X[train], Y[train])
@@ -217,11 +217,16 @@ def classify(X, Y, classifierName, useKFold=True):
                 mcc_score = np.round(mcc_score, decimals=2)
                 accuracy = np.round(accuracy, decimals=2)
 
+                # Unpacking confusion matrix
+                c0, c1, c2, c3, c4, c5, c6, c7, c8, c9 = \
+                    confusion_matrix[digit]
+
                 # Write values to file
                 csv_writer.writerow(['', digit, precision, recall, f1_score,
-                                     mcc_score, accuracy, tp, tn, fp, fn])
+                                     mcc_score, accuracy, tp, tn, fp, fn, '',
+                                     c0, c1, c2, c3, c4, c5, c6, c7, c8, c9
+                                     ])
                 digit += 1
-
             # Calculate and write overall mcc
             overall_mcc_score = metrics.matthews_corrcoef(Y[test], predictions)
             overall_mcc_score = np.round(overall_mcc_score, decimals=2)
