@@ -16,7 +16,7 @@ tical analysis of the results;
 
 Responsible for selecting the classifier, training, k-folding, creating results and saving models
 
-## digit_recognition.py
+## digit_categorization.py
 
 Responsible for reading in DataSet/ and selecting whether to use one specific classifier or to use all the classifiers
 
