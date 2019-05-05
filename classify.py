@@ -1,4 +1,5 @@
 import csv
+import pathlib
 from math import sqrt
 
 import numpy as np
@@ -151,6 +152,10 @@ def classify(X, Y, classifierName, useKFold=True):
         print(classifierName, end=" ")
         print(f'Accuracy: {result[1]:.2f}', end=" ")
         print(f'MCC score: {metrics.matthews_corrcoef(Y, result[0]):0.2f}')
+
+        # Create directory if it does not exists
+        pathlib.Path('models/').mkdir(exist_ok=True)
+
         if(classifierName == 'nn'):
             model.save('models/nn_model.h5')
         else:
@@ -159,6 +164,9 @@ def classify(X, Y, classifierName, useKFold=True):
 
     # Create k-fold
     kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
+
+    # Create directory if it does not exists
+    pathlib.Path('csv/').mkdir(exist_ok=True)
 
     # Create filename using the classifier choosen
     filename = f'csv/{classifierName}.csv'
