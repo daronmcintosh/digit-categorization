@@ -7,7 +7,7 @@ from keras import models
 from matplotlib import image
 from sklearn.externals import joblib
 
-import digit_recognition
+import digit_categorization
 import classify
 
 
