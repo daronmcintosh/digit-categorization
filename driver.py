@@ -48,7 +48,7 @@ def runCompetition(folderName, classifierName):
                     model = joblib.load(f'models/{classifierName}_model.pkl')
             except (OSError, FileNotFoundError):
                 # Create and save model using classifierName
-                digit_recognition.classifyOne(
+                digit_categorization.classifyOne(
                     False, classifierName=classifierName)
                 continue
             break
@@ -67,6 +67,6 @@ def runCompetition(folderName, classifierName):
 
 
 # Three ways to run the program
-# digit_recognition.classifyOne(False, classifierName='svcOvR')
-# digit_recognition.classifyAll(False)
+# digit_categorization.classifyOne(False, classifierName='svcOvR')
+# digit_categorization.classifyAll(False)
 runCompetition('CompetionDataSet', 'svcOvO')
